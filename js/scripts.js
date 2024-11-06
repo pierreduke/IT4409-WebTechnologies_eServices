@@ -1099,10 +1099,13 @@ function updateMainMenuContent(parentId, subId, contentId, newContent) {
              subId === 'testing' || subId === 'optimization' || subId === 'authentication') {
     subSection = mainSection.querySelector(`#${subId}`);
   } else if (subId === 'academic-info' || subId === 'skills-info' || 
-             subId === 'projects-info' || subId === 'hobbies-info' ||
-             subId === 'academic-info-2' || subId === 'skills-info-2' || 
+             subId === 'projects-info' || subId === 'hobbies-info') {
+    // Xử lý cho Thông tin sinh viên
+    subSection = document.querySelector(`#${subId}`);
+  } else if (subId === 'academic-info-2' || subId === 'skills-info-2' || 
              subId === 'projects-info-2' || subId === 'hobbies-info-2') {
-    subSection = mainSection.querySelector(`#${subId}`);
+    // Xử lý cho Thông tin sinh viên 2
+    subSection = document.querySelector(`#${subId}`);
   }
 
   if (!subSection) return;
@@ -1121,21 +1124,21 @@ function updateMainMenuContent(parentId, subId, contentId, newContent) {
     
     // Clone grid header
     const newHeader = gridHeader.cloneNode(true);
+    newHeader.className = 'section-header'; // Sử dụng class giống với thiết kế gốc
     
-    // Tạo grid container mới với style phù hợp cho từng loại nội dung
+    // Tạo grid container mới
     const newGrid = document.createElement('div');
     newGrid.className = 'seminar-grid';
     
     // Tùy chỉnh style grid dựa trên loại nội dung
-    if (subId === 'classInfo' || subId === 'seminar' || subId === 'company') {
-      newGrid.classList.add('info-grid');
-    } else if (subId.includes('summary') || subId.includes('content')) {
-      newGrid.classList.add('text-grid');
-    } else if (subId === 'reference') {
-      newGrid.classList.add('reference-grid');
-    } else if (subId.startsWith('academic') || subId.startsWith('skills') || 
-               subId.startsWith('projects') || subId.startsWith('hobbies')) {
-      newGrid.classList.add('student-grid');
+    if (subId.includes('academic')) {
+      newGrid.classList.add('academic-grid');
+    } else if (subId.includes('skills')) {
+      newGrid.classList.add('skills-grid');
+    } else if (subId.includes('projects')) {
+      newGrid.classList.add('projects-grid');
+    } else if (subId.includes('hobbies')) {
+      newGrid.classList.add('hobbies-grid');
     }
     
     // Lấy tất cả các items từ bảng admin
@@ -1156,45 +1159,31 @@ function updateMainMenuContent(parentId, subId, contentId, newContent) {
         
         if (itemContent) {
           const newItem = document.createElement('div');
-          newItem.className = 'seminar-item';
+          newItem.className = 'table-info'; // Sử dụng class giống với thiết kế gốc
           
           // Tùy chỉnh hiển thị dựa trên loại nội dung
-          let itemHTML = `
-            <div class="seminar-title">${contentName}</div>
-            <div class="content-preview">
-          `;
-
-          // Xử lý hiển thị đặc biệt cho từng loại nội dung
-          if (subId === 'reference') {
-            itemHTML += `
-              <div class="reference-content">
-                ${itemContent}
-              </div>
-            `;
-          } else if (subId.includes('academic')) {
-            itemHTML += `
-              <div class="academic-content">
-                ${itemContent}
-              </div>
+          if (subId.includes('academic')) {
+            newItem.innerHTML = `
+              <div class="section-header" style="margin-top: 20px;">${contentName}</div>
+              <div class="academic-content">${itemContent}</div>
             `;
           } else if (subId.includes('skills')) {
-            itemHTML += `
-              <div class="skills-content">
-                ${itemContent}
-              </div>
+            newItem.innerHTML = `
+              <div class="section-header" style="margin-top: 20px;">${contentName}</div>
+              <div class="skills-content">${itemContent}</div>
             `;
           } else if (subId.includes('projects')) {
-            itemHTML += `
-              <div class="projects-content">
-                ${itemContent}
-              </div>
+            newItem.innerHTML = `
+              <div class="section-header" style="margin-top: 20px;">${contentName}</div>
+              <div class="projects-content">${itemContent}</div>
             `;
-          } else {
-            itemHTML += itemContent;
+          } else if (subId.includes('hobbies')) {
+            newItem.innerHTML = `
+              <div class="section-header" style="margin-top: 20px;">${contentName}</div>
+              <div class="hobbies-content">${itemContent}</div>
+            `;
           }
-
-          itemHTML += `</div>`;
-          newItem.innerHTML = itemHTML;
+          
           newGrid.appendChild(newItem);
         }
       }
@@ -1207,60 +1196,24 @@ function updateMainMenuContent(parentId, subId, contentId, newContent) {
     // Thêm style cho các loại grid khác nhau
     const gridStyles = document.createElement('style');
     gridStyles.textContent = `
-      .info-grid {
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px;
-      }
-      
-      .text-grid {
-        grid-template-columns: 1fr;
-        gap: 30px;
-      }
-      
-      .reference-grid {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 25px;
-      }
-      
-      .student-grid {
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        gap: 25px;
-      }
-
-      .seminar-item {
-        background: white;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        transition: transform 0.2s;
-      }
-
-      .seminar-item:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-      }
-
-      .seminar-title {
-        background: #f8f9fa;
-        color: #333;
-        padding: 12px 15px;
-        font-size: 1.1em;
-        border-bottom: 2px solid #e9ecef;
-      }
-
-      .content-preview {
-        padding: 15px;
-        line-height: 1.6;
-      }
-
-      .reference-content {
+      .academic-grid,
+      .skills-grid,
+      .projects-grid,
+      .hobbies-grid {
         display: flex;
         flex-direction: column;
-        align-items: center;
+        gap: 20px;
+        margin-top: 20px;
       }
 
       .academic-content,
       .skills-content,
-      .projects-content {
+      .projects-content,
+      .hobbies-content {
         padding: 15px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
       }
 
       .academic-content table,
@@ -1268,6 +1221,7 @@ function updateMainMenuContent(parentId, subId, contentId, newContent) {
       .projects-content table {
         width: 100%;
         border-collapse: collapse;
+        margin-top: 10px;
       }
 
       .academic-content th,
@@ -1276,8 +1230,25 @@ function updateMainMenuContent(parentId, subId, contentId, newContent) {
       .skills-content td,
       .projects-content th,
       .projects-content td {
+        border: 1px solid #ddd;
         padding: 8px;
-        border: 1px solid #dee2e6;
+        text-align: left;
+      }
+
+      .academic-content th,
+      .skills-content th,
+      .projects-content th {
+        background-color: #f5f5f5;
+        font-weight: bold;
+      }
+
+      .hobbies-content ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+
+      .hobbies-content li {
+        margin: 5px 0;
       }
     `;
     document.head.appendChild(gridStyles);
