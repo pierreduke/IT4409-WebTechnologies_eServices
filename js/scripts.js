@@ -347,10 +347,20 @@ function viewContent(id) {
       ];
     }
 
+    // Xác định xem có phải menu sinh viên không
+    const isStudentMenu = id === 'student-info' || id === 'student-info-2';
+    
     // Tạo nội dung cho section
     adminSection.innerHTML = `
       <div class="container">
-        <div class="header">Admin menu left: ${contentName}</div>
+        <div class="header-container">
+          <span class="header">Admin menu left: ${contentName}</span>
+          ${isStudentMenu ? `
+            <button onclick="resetStudentMenu('${id}')" class="reset-icon" title="Reset Menu">
+              <i class="fas fa-redo"></i>
+            </button>
+          ` : ''}
+        </div>
         <table class="table-info admin-table">
           <thead>
             <tr>
@@ -375,6 +385,34 @@ function viewContent(id) {
         </table>
       </div>
     `;
+
+    // Thêm style cho header container và nút reset
+    const style = document.createElement('style');
+    style.textContent = `
+      .header-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .reset-icon {
+        background: none;
+        border: none;
+        color: #dc3545;
+        cursor: pointer;
+        padding: 5px;
+        font-size: 16px;
+        transition: transform 0.3s ease;
+      }
+
+      .reset-icon:hover {
+        transform: rotate(180deg);
+        color: #c82333;
+      }
+    `;
+    document.head.appendChild(style);
     
     document.getElementById('content-container').appendChild(adminSection);
   }
@@ -1332,3 +1370,63 @@ style.textContent = `
   }
 `;
 document.head.appendChild(style);
+
+// Thêm hàm mới để xử lý reset menu sinh viên
+function resetStudentMenu(id) {
+  if (confirm('Bạn có chắc chắn muốn reset menu? Tất cả nội dung hiện tại sẽ bị xóa.')) {
+    // Các menu mặc định
+    const defaultMenus = [
+      { id: 'cv', name: 'CV' },
+      { id: 'projects', name: 'Các dự án đã tham gia' },
+      { id: 'community', name: 'Sinh hoạt cộng đồng' }
+    ];
+
+    // Tìm bảng admin
+    const adminViewId = `admin-view-${id}`;
+    const adminTable = document.querySelector(`#${adminViewId} .admin-table tbody`);
+    if (!adminTable) return;
+
+    // Xóa tất cả các row hiện tại
+    adminTable.innerHTML = '';
+
+    // Thêm các menu mặc định
+    defaultMenus.forEach(menu => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${menu.name}</td>
+        <td><button onclick="viewSubContent('${id}', '${menu.id}')" class="action-btn"><i class="far fa-eye"></i></button></td>
+        <td><button onclick="editSubContent('${id}', '${menu.id}')" class="action-btn"><i class="far fa-edit"></i></button></td>
+        <td><button onclick="deleteSubContent('${id}', '${menu.id}')" class="action-btn"><i class="far fa-trash-alt"></i></button></td>
+        <td><button onclick="addSubContent('${id}', '${menu.id}')" class="action-btn"><i class="fas fa-plus"></i></button></td>
+      `;
+      adminTable.appendChild(row);
+    });
+
+    // Xóa tất cả nội dung đã lưu
+    Object.keys(contentStorage).forEach(key => {
+      if (key.startsWith(`${id}-`)) {
+        delete contentStorage[key];
+      }
+    });
+
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith(`content-${id}`)) {
+        localStorage.removeItem(key);
+      }
+    });
+
+    // Cập nhật sidebar
+    const sidebar = document.getElementById('mySidebar');
+    if (sidebar) {
+      sidebar.innerHTML = `
+        <h4 class="w3-bar-item"><b>${id === 'student-info' ? 'Thông tin sinh viên' : 'Thông tin sinh viên 2'}</b></h4>
+        ${defaultMenus.map(menu => `
+          <a class="w3-bar-item w3-button w3-hover-black" href="#${menu.id}">${menu.name}</a>
+        `).join('')}
+      `;
+    }
+
+    // Hiển thị thông báo thành công
+    alert('Đã reset menu thành công!');
+  }
+}
