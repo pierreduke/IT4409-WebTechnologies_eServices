@@ -1085,7 +1085,26 @@ function updateMainMenuContent(parentId, subId, contentId, newContent) {
   if (!mainSection) return;
 
   // Tìm subsection tương ứng
-  const subSection = mainSection.querySelector(`#${subId}`);
+  let subSection;
+  
+  // Xử lý các trường hợp đặc biệt
+  if (subId === 'classInfo' || subId === 'seminar' || subId === 'company') {
+    subSection = mainSection.querySelector(`#${subId}`);
+  } else if (subId.startsWith('summaryVN') || subId.startsWith('summaryEN') || 
+             subId.startsWith('contentVN') || subId.startsWith('contentEN') || 
+             subId === 'reference') {
+    subSection = mainSection.querySelector(`#${subId}`);
+  } else if (subId === 'frontend' || subId === 'backend' || subId === 'database' || 
+             subId === 'api' || subId === 'devops' || subId === 'security' || 
+             subId === 'testing' || subId === 'optimization' || subId === 'authentication') {
+    subSection = mainSection.querySelector(`#${subId}`);
+  } else if (subId === 'academic-info' || subId === 'skills-info' || 
+             subId === 'projects-info' || subId === 'hobbies-info' ||
+             subId === 'academic-info-2' || subId === 'skills-info-2' || 
+             subId === 'projects-info-2' || subId === 'hobbies-info-2') {
+    subSection = mainSection.querySelector(`#${subId}`);
+  }
+
   if (!subSection) return;
 
   // Lấy grid từ Admin contents layout
@@ -1103,9 +1122,21 @@ function updateMainMenuContent(parentId, subId, contentId, newContent) {
     // Clone grid header
     const newHeader = gridHeader.cloneNode(true);
     
-    // Tạo grid container mới
+    // Tạo grid container mới với style phù hợp cho từng loại nội dung
     const newGrid = document.createElement('div');
     newGrid.className = 'seminar-grid';
+    
+    // Tùy chỉnh style grid dựa trên loại nội dung
+    if (subId === 'classInfo' || subId === 'seminar' || subId === 'company') {
+      newGrid.classList.add('info-grid');
+    } else if (subId.includes('summary') || subId.includes('content')) {
+      newGrid.classList.add('text-grid');
+    } else if (subId === 'reference') {
+      newGrid.classList.add('reference-grid');
+    } else if (subId.startsWith('academic') || subId.startsWith('skills') || 
+               subId.startsWith('projects') || subId.startsWith('hobbies')) {
+      newGrid.classList.add('student-grid');
+    }
     
     // Lấy tất cả các items từ bảng admin
     const adminTable = adminLayoutSection.querySelector('.admin-table tbody');
@@ -1126,10 +1157,44 @@ function updateMainMenuContent(parentId, subId, contentId, newContent) {
         if (itemContent) {
           const newItem = document.createElement('div');
           newItem.className = 'seminar-item';
-          newItem.innerHTML = `
+          
+          // Tùy chỉnh hiển thị dựa trên loại nội dung
+          let itemHTML = `
             <div class="seminar-title">${contentName}</div>
-            <div class="content-preview">${itemContent}</div>
+            <div class="content-preview">
           `;
+
+          // Xử lý hiển thị đặc biệt cho từng loại nội dung
+          if (subId === 'reference') {
+            itemHTML += `
+              <div class="reference-content">
+                ${itemContent}
+              </div>
+            `;
+          } else if (subId.includes('academic')) {
+            itemHTML += `
+              <div class="academic-content">
+                ${itemContent}
+              </div>
+            `;
+          } else if (subId.includes('skills')) {
+            itemHTML += `
+              <div class="skills-content">
+                ${itemContent}
+              </div>
+            `;
+          } else if (subId.includes('projects')) {
+            itemHTML += `
+              <div class="projects-content">
+                ${itemContent}
+              </div>
+            `;
+          } else {
+            itemHTML += itemContent;
+          }
+
+          itemHTML += `</div>`;
+          newItem.innerHTML = itemHTML;
           newGrid.appendChild(newItem);
         }
       }
@@ -1138,6 +1203,84 @@ function updateMainMenuContent(parentId, subId, contentId, newContent) {
     // Thêm header và grid vào subsection
     subSection.appendChild(newHeader);
     subSection.appendChild(newGrid);
+
+    // Thêm style cho các loại grid khác nhau
+    const gridStyles = document.createElement('style');
+    gridStyles.textContent = `
+      .info-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+      }
+      
+      .text-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+      
+      .reference-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 25px;
+      }
+      
+      .student-grid {
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 25px;
+      }
+
+      .seminar-item {
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+      }
+
+      .seminar-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      }
+
+      .seminar-title {
+        background: #f8f9fa;
+        color: #333;
+        padding: 12px 15px;
+        font-size: 1.1em;
+        border-bottom: 2px solid #e9ecef;
+      }
+
+      .content-preview {
+        padding: 15px;
+        line-height: 1.6;
+      }
+
+      .reference-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .academic-content,
+      .skills-content,
+      .projects-content {
+        padding: 15px;
+      }
+
+      .academic-content table,
+      .skills-content table,
+      .projects-content table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .academic-content th,
+      .academic-content td,
+      .skills-content th,
+      .skills-content td,
+      .projects-content th,
+      .projects-content td {
+        padding: 8px;
+        border: 1px solid #dee2e6;
+      }
+    `;
+    document.head.appendChild(gridStyles);
   }
 }
 
