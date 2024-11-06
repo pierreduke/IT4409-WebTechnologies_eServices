@@ -1071,8 +1071,15 @@ function updatePreview(contentViewId) {
   }
 }
 
-// Hàm cập nhật nội dung trong menu chính
+// Thêm biến để lưu trữ nội dung của tất cả các items
+const contentStorage = {};
+
+// Sửa hàm updateMainMenuContent
 function updateMainMenuContent(parentId, subId, contentId, newContent) {
+  // Lưu nội dung mới vào storage
+  const storageKey = `${parentId}-${subId}-${contentId}`;
+  contentStorage[storageKey] = newContent;
+
   // Tìm section chính tương ứng
   const mainSection = document.getElementById(parentId);
   if (!mainSection) return;
@@ -1093,39 +1100,48 @@ function updateMainMenuContent(parentId, subId, contentId, newContent) {
     // Xóa nội dung cũ của subsection
     subSection.innerHTML = '';
     
-    // Clone grid header và container từ admin layout
+    // Clone grid header
     const newHeader = gridHeader.cloneNode(true);
-    const newGrid = gridContainer.cloneNode(true);
     
-    // Thêm vào subsection
+    // Tạo grid container mới
+    const newGrid = document.createElement('div');
+    newGrid.className = 'seminar-grid';
+    
+    // Lấy tất cả các items từ bảng admin
+    const adminTable = adminLayoutSection.querySelector('.admin-table tbody');
+    const rows = adminTable.querySelectorAll('tr');
+    
+    // Tạo các grid items cho mỗi row trong bảng admin
+    rows.forEach(row => {
+      const contentName = row.cells[0].textContent;
+      const itemContentId = row.querySelector('button[onclick^="viewLayoutContent"]')
+        ?.getAttribute('onclick')
+        ?.match(/'([^']+)'/g)[2]
+        ?.replace(/'/g, '');
+      
+      if (itemContentId) {
+        const storageKey = `${parentId}-${subId}-${itemContentId}`;
+        const itemContent = contentStorage[storageKey];
+        
+        if (itemContent) {
+          const newItem = document.createElement('div');
+          newItem.className = 'seminar-item';
+          newItem.innerHTML = `
+            <div class="seminar-title">${contentName}</div>
+            <div class="content-preview">${itemContent}</div>
+          `;
+          newGrid.appendChild(newItem);
+        }
+      }
+    });
+    
+    // Thêm header và grid vào subsection
     subSection.appendChild(newHeader);
     subSection.appendChild(newGrid);
-
-    // Cập nhật nội dung cho item cụ thể trong grid
-    if (newContent) {
-      const contentRow = document.querySelector(`button[onclick="viewLayoutContent('${parentId}', '${subId}', '${contentId}')"]`).closest('tr');
-      if (contentRow) {
-        const contentName = contentRow.cells[0].textContent;
-        const items = newGrid.querySelectorAll('.seminar-item');
-        items.forEach(item => {
-          const title = item.querySelector('.seminar-title');
-          if (title && title.textContent === contentName) {
-            // Tìm hoặc tạo content container
-            let contentContainer = item.querySelector('.content-preview');
-            if (!contentContainer) {
-              contentContainer = document.createElement('div');
-              contentContainer.className = 'content-preview';
-              item.appendChild(contentContainer);
-            }
-            contentContainer.innerHTML = newContent;
-          }
-        });
-      }
-    }
   }
 }
 
-// Hàm load nội dung đã lưu
+// Sửa hàm loadSavedContent để cập nhật contentStorage
 function loadSavedContent(contentViewId) {
   const editor = document.getElementById(`contentEditor-${contentViewId}`);
   const preview = document.getElementById(`contentPreview-${contentViewId}`);
@@ -1136,9 +1152,40 @@ function loadSavedContent(contentViewId) {
       editor.value = savedContent;
       preview.innerHTML = savedContent;
 
-      // Cập nhật menu chính khi load nội dung đã lưu
+      // Cập nhật contentStorage và menu chính
       const [, parentId, subId, contentId] = contentViewId.split('-');
+      const storageKey = `${parentId}-${subId}-${contentId}`;
+      contentStorage[storageKey] = savedContent;
       updateMainMenuContent(parentId, subId, contentId, savedContent);
     }
   }
 }
+
+// Thêm CSS cho grid layout
+const style = document.createElement('style');
+style.textContent = `
+  .seminar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .seminar-item {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .seminar-title {
+    background: #f5f5f5;
+    padding: 10px;
+    font-weight: bold;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .content-preview {
+    padding: 15px;
+  }
+`;
+document.head.appendChild(style);
