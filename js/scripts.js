@@ -1084,7 +1084,7 @@ function saveContentLayout(parentId, subId) {
 
 // Thêm hàm xử lý hủy thay đổi
 function cancelContentLayout(parentId, subId) {
-  if (confirm('Bạn có chắc chắn muốn hủy các thay đổi?')) {
+  if (confirm('Bạn có ch���c chắn muốn hủy các thay đổi?')) {
     returnToAdminView(parentId);
   }
 }
@@ -1123,29 +1123,7 @@ function updateMainMenuContent(parentId, subId, contentId, newContent) {
   if (!mainSection) return;
 
   // Tìm subsection tương ứng
-  let subSection;
-  
-  // Xử lý các trường hợp đặc biệt
-  if (subId === 'classInfo' || subId === 'seminar' || subId === 'company') {
-    subSection = mainSection.querySelector(`#${subId}`);
-  } else if (subId.startsWith('summaryVN') || subId.startsWith('summaryEN') || 
-             subId.startsWith('contentVN') || subId.startsWith('contentEN') || 
-             subId === 'reference') {
-    subSection = mainSection.querySelector(`#${subId}`);
-  } else if (subId === 'frontend' || subId === 'backend' || subId === 'database' || 
-             subId === 'api' || subId === 'devops' || subId === 'security' || 
-             subId === 'testing' || subId === 'optimization' || subId === 'authentication') {
-    subSection = mainSection.querySelector(`#${subId}`);
-  } else if (subId === 'academic-info' || subId === 'skills-info' || 
-             subId === 'projects-info' || subId === 'hobbies-info') {
-    // Xử lý cho Thông tin sinh viên
-    subSection = document.querySelector(`#${subId}`);
-  } else if (subId === 'academic-info-2' || subId === 'skills-info-2' || 
-             subId === 'projects-info-2' || subId === 'hobbies-info-2') {
-    // Xử lý cho Thông tin sinh viên 2
-    subSection = document.querySelector(`#${subId}`);
-  }
-
+  const subSection = mainSection.querySelector(`#${subId}`);
   if (!subSection) return;
 
   // Lấy grid từ Admin contents layout
@@ -1161,23 +1139,13 @@ function updateMainMenuContent(parentId, subId, contentId, newContent) {
     subSection.innerHTML = '';
     
     // Clone grid header
-    const newHeader = gridHeader.cloneNode(true);
-    newHeader.className = 'section-header'; // Sử dụng class giống với thiết kế gốc
+    const newHeader = document.createElement('div');
+    newHeader.className = 'section-header';
+    newHeader.textContent = gridHeader.textContent;
     
     // Tạo grid container mới
     const newGrid = document.createElement('div');
     newGrid.className = 'seminar-grid';
-    
-    // Tùy chỉnh style grid dựa trên loại nội dung
-    if (subId.includes('academic')) {
-      newGrid.classList.add('academic-grid');
-    } else if (subId.includes('skills')) {
-      newGrid.classList.add('skills-grid');
-    } else if (subId.includes('projects')) {
-      newGrid.classList.add('projects-grid');
-    } else if (subId.includes('hobbies')) {
-      newGrid.classList.add('hobbies-grid');
-    }
     
     // Lấy tất cả các items từ bảng admin
     const adminTable = adminLayoutSection.querySelector('.admin-table tbody');
@@ -1192,36 +1160,17 @@ function updateMainMenuContent(parentId, subId, contentId, newContent) {
         ?.replace(/'/g, '');
       
       if (itemContentId) {
-        const storageKey = `${parentId}-${subId}-${itemContentId}`;
-        const itemContent = contentStorage[storageKey];
+        const itemStorageKey = `${parentId}-${subId}-${itemContentId}`;
+        const itemContent = contentStorage[itemStorageKey];
         
+        // Chỉ tạo item nếu có nội dung
         if (itemContent) {
           const newItem = document.createElement('div');
-          newItem.className = 'table-info'; // Sử dụng class giống với thiết kế gốc
-          
-          // Tùy chỉnh hiển thị dựa trên loại nội dung
-          if (subId.includes('academic')) {
-            newItem.innerHTML = `
-              <div class="section-header" style="margin-top: 20px;">${contentName}</div>
-              <div class="academic-content">${itemContent}</div>
-            `;
-          } else if (subId.includes('skills')) {
-            newItem.innerHTML = `
-              <div class="section-header" style="margin-top: 20px;">${contentName}</div>
-              <div class="skills-content">${itemContent}</div>
-            `;
-          } else if (subId.includes('projects')) {
-            newItem.innerHTML = `
-              <div class="section-header" style="margin-top: 20px;">${contentName}</div>
-              <div class="projects-content">${itemContent}</div>
-            `;
-          } else if (subId.includes('hobbies')) {
-            newItem.innerHTML = `
-              <div class="section-header" style="margin-top: 20px;">${contentName}</div>
-              <div class="hobbies-content">${itemContent}</div>
-            `;
-          }
-          
+          newItem.className = 'seminar-item';
+          newItem.innerHTML = `
+            <div class="seminar-title">${contentName}</div>
+            <div class="content-preview">${itemContent}</div>
+          `;
           newGrid.appendChild(newItem);
         }
       }
@@ -1231,62 +1180,32 @@ function updateMainMenuContent(parentId, subId, contentId, newContent) {
     subSection.appendChild(newHeader);
     subSection.appendChild(newGrid);
 
-    // Thêm style cho các loại grid khác nhau
+    // Thêm style cho grid layout
     const gridStyles = document.createElement('style');
     gridStyles.textContent = `
-      .academic-grid,
-      .skills-grid,
-      .projects-grid,
-      .hobbies-grid {
-        display: flex;
-        flex-direction: column;
+      .seminar-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 20px;
-        margin-top: 20px;
+        padding: 20px;
       }
 
-      .academic-content,
-      .skills-content,
-      .projects-content,
-      .hobbies-content {
-        padding: 15px;
-        background: white;
+      .seminar-item {
         border: 1px solid #ddd;
         border-radius: 4px;
+        overflow: hidden;
+        background: white;
       }
 
-      .academic-content table,
-      .skills-content table,
-      .projects-content table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-      }
-
-      .academic-content th,
-      .academic-content td,
-      .skills-content th,
-      .skills-content td,
-      .projects-content th,
-      .projects-content td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: left;
-      }
-
-      .academic-content th,
-      .skills-content th,
-      .projects-content th {
-        background-color: #f5f5f5;
+      .seminar-title {
+        background: #f5f5f5;
+        padding: 10px;
         font-weight: bold;
+        border-bottom: 1px solid #ddd;
       }
 
-      .hobbies-content ul {
-        margin: 0;
-        padding-left: 20px;
-      }
-
-      .hobbies-content li {
-        margin: 5px 0;
+      .content-preview {
+        padding: 15px;
       }
     `;
     document.head.appendChild(gridStyles);
