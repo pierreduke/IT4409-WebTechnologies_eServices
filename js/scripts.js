@@ -1,35 +1,28 @@
+//find current row
 function editContent(id) {
-  // Tìm row hiện tại
   const row = document.querySelector(`button[onclick="editContent('${id}')"]`).closest('tr');
   const currentName = row.cells[0].textContent;
   
-  // Tạo input để edit
   const input = document.createElement('input');
   input.type = 'text';
   input.value = currentName;
   input.style.width = '100%';
   input.style.padding = '5px';
   
-  // Thay thế text bằng input
   row.cells[0].textContent = '';
   row.cells[0].appendChild(input);
   
-  // Focus vào input
   input.focus();
   
-  // Xử lý khi nhấn Enter hoặc click ra ngoài
   function handleEdit(e) {
     if (e.type === 'keyup' && e.key !== 'Enter') return;
     
     const newName = input.value.trim();
     if (newName) {
-      // Cập nhật tên trong bảng admin
       row.cells[0].textContent = newName;
       
-      // Cập nhật navigation
       const navLink = document.querySelector(`a[onclick="showContent('${id}')"]`);
       if (navLink) {
-        // Giữ lại icon nếu có (như trường hợp trang chủ)
         const icon = navLink.querySelector('i');
         if (icon) {
           navLink.innerHTML = '';
@@ -40,19 +33,14 @@ function editContent(id) {
         }
       }
       
-      // Cập nhật sidebar nếu đang ở section được edit
       updateSidebar(id, newName);
-
-      // Cập nhật tất cả các header trong các view khác
       updateAllHeaders(id, currentName, newName);
-      
-      // Cập nhật tất cả các grid header
       updateAllGridHeaders(id, currentName, newName);
+
     } else {
       row.cells[0].textContent = currentName;
     }
     
-    // Cleanup event listeners
     input.removeEventListener('blur', handleEdit);
     input.removeEventListener('keyup', handleEdit);
   }
@@ -61,9 +49,8 @@ function editContent(id) {
   input.addEventListener('keyup', handleEdit);
 }
 
-// Thêm hàm mới để cập nhật tất cả các header
+// add new func to update all headers
 function updateAllHeaders(id, oldName, newName) {
-  // Cập nhật header trong Admin contents layout
   document.querySelectorAll('.header').forEach(header => {
     if (header.textContent.includes(oldName)) {
       header.textContent = header.textContent.replace(oldName, newName);
@@ -71,19 +58,16 @@ function updateAllHeaders(id, oldName, newName) {
   });
 }
 
-// Thêm hàm mới để cập nhật tất cả các grid header
+// add new func to update all grid headers
 function updateAllGridHeaders(id, oldName, newName) {
-  // Cập nhật grid header trong tất cả các view
   document.querySelectorAll('.seminar-header').forEach(header => {
     if (header.textContent === oldName) {
       header.textContent = newName;
     }
   });
 
-  // Cập nhật tên trong các grid item
   document.querySelectorAll('.seminar-title').forEach(title => {
     if (title.textContent.includes(oldName)) {
-      // Chỉ thay thế phần tên menu, giữ nguyên số thứ tự
       const parts = title.textContent.split(' ');
       const number = parts[parts.length - 1];
       const prefix = oldName.split(' ').slice(0, -1).join(' ');
@@ -96,7 +80,6 @@ function updateAllGridHeaders(id, oldName, newName) {
 function updateSidebar(id, newName) {
   const sidebar = document.getElementById('mySidebar');
   
-  // Cập nhật tiêu đề sidebar tương ứng với section
   if (id === 'courseInfo') {
     sidebar.querySelector('h4 b').textContent = newName;
   } else if (id === 'info') {
@@ -110,23 +93,19 @@ function updateSidebar(id, newName) {
   }
 }
 
-// Cập nhật hàm showContent để xử lý tên mới trong sidebar
+//update showContent to handle new name in sidebar
 function showContent(sectionId) {
-  // Hide all sections
   const sections = document.querySelectorAll('.w3-container');
   sections.forEach(section => section.classList.add('hidden'));
 
-  // Remove active class from all buttons
   const buttons = document.querySelectorAll('.w3-bar-item');
   buttons.forEach(button => button.classList.remove('active'));
 
-  // Show selected section
   document.getElementById(sectionId).classList.remove('hidden');
 
   const sidebar = document.getElementById("mySidebar");
   sidebar.innerHTML = '';
 
-  // Lấy tên hiện tại từ navigation
   const currentName = document.querySelector(`a[onclick="showContent('${sectionId}')"]`).textContent.trim();
 
   if (sectionId === 'courseInfo') {
@@ -180,16 +159,14 @@ function showContent(sectionId) {
   event.target.classList.add('active');
 }
 
-// Thêm biến đếm toàn cục
 let newContentCounter = 1;
 
+//function to add new content
 function addContent(id) {
-  // Tạo ID mới cho mục mới
   const newId = 'content-' + Date.now();
   const newContentName = `Nội dung mới ${newContentCounter}`;
   newContentCounter++;
   
-  // Thêm row mới vào bảng admin ngay sau row được chọn
   const row = document.querySelector(`button[onclick="addContent('${id}')"]`).closest('tr');
   const newRow = document.createElement('tr');
   newRow.innerHTML = `
@@ -201,7 +178,6 @@ function addContent(id) {
   `;
   row.insertAdjacentElement('afterend', newRow);
 
-  // Thêm link mới vào navigation bar ngay sau link được chọn
   const navBar = document.querySelector('.w3-bar.w3-theme.w3-large');
   const navLinks = Array.from(navBar.children);
   const currentNavLink = navLinks.find(link => {
@@ -218,7 +194,6 @@ function addContent(id) {
     currentNavLink.insertAdjacentElement('afterend', newNavLink);
   }
 
-  // Tạo section mới
   const mainContent = document.getElementById('content-container');
   const newSection = document.createElement('div');
   newSection.id = newId;
@@ -232,7 +207,6 @@ function addContent(id) {
     </div>
   `;
   
-  // Thêm section mới vào sau section hiện tại
   const currentSection = document.getElementById(id);
   if (currentSection && currentSection.nextElementSibling) {
     currentSection.parentNode.insertBefore(newSection, currentSection.nextElementSibling);
@@ -240,7 +214,6 @@ function addContent(id) {
     mainContent.appendChild(newSection);
   }
 
-  // Cập nhật sidebar cho section mới
   const sidebar = document.getElementById('mySidebar');
   sidebar.innerHTML = `
     <h4 class="w3-bar-item"><b>${newContentName}</b></h4>
@@ -248,35 +221,30 @@ function addContent(id) {
     <a class="w3-bar-item w3-button w3-hover-black" href="#section2">Phần 2</a>
   `;
 
-  // Chuyển đến section mới
   showContent(newId);
 }
 
+//function to delete content
 function deleteContent(id) {
   if (confirm('Bạn có chắc chắn muốn xóa nội dung này?')) {
-    // Xóa item khỏi bảng admin
     const row = document.querySelector(`button[onclick="deleteContent('${id}')"]`).closest('tr');
     row.remove();
     
-    // Xóa item khỏi navigation bar
     const navLink = document.querySelector(`a[onclick="showContent('${id}')"]`);
     if (navLink) {
       navLink.remove();
     }
     
-    // Ẩn section tương ứng
     const section = document.getElementById(id);
     if (section) {
       section.remove();
     }
     
-    // Nếu đang ở section bị xóa, chuyển về trang chủ
     const currentSection = document.querySelector('.w3-container:not(.hidden)');
     if (currentSection && currentSection.id === id) {
       showContent('courseInfo');
     }
     
-    // Cập nhật sidebar
     const sidebar = document.getElementById('mySidebar');
     if (sidebar.querySelector(`a[href="#${id}"]`)) {
       sidebar.innerHTML = `
@@ -289,12 +257,10 @@ function deleteContent(id) {
   }
 }
 
+//function to view content
 function viewContent(id) {
-  // Lấy tên của mục từ bảng admin
   const row = document.querySelector(`button[onclick="viewContent('${id}')"]`).closest('tr');
   const contentName = row.cells[0].textContent;
-
-  // Tạo section mới cho admin view
   const adminViewId = `admin-view-${id}`;
   let adminSection = document.getElementById(adminViewId);
   
@@ -303,7 +269,6 @@ function viewContent(id) {
     adminSection.id = adminViewId;
     adminSection.className = 'w3-container w3-padding-64 hidden';
     
-    // Xác định các submenu dựa vào id
     let subMenus = [];
     if (id === 'courseInfo') {
       subMenus = [
@@ -347,10 +312,8 @@ function viewContent(id) {
       ];
     }
 
-    // Xác định xem có phải menu sinh viên không
     const isStudentMenu = id === 'student-info' || id === 'student-info-2';
     
-    // Tạo nội dung cho section
     adminSection.innerHTML = `
       <div class="container">
         <div class="header-container">
@@ -377,7 +340,6 @@ function viewContent(id) {
       </div>
     `;
 
-    // Thêm style cho header container và nút reset
     const style = document.createElement('style');
     style.textContent = `
       .header-container {
@@ -408,7 +370,7 @@ function viewContent(id) {
     document.getElementById('content-container').appendChild(adminSection);
   }
 
-  // Cập nhật sidebar để giống với sidebar của trang gốc
+  //update sidebar so that it can be similar to the original sidebar
   const sidebar = document.getElementById('mySidebar');
   if (id === 'courseInfo') {
     sidebar.innerHTML = `
@@ -457,42 +419,31 @@ function viewContent(id) {
     `;
   }
 
-  // Hiển thị section mới và ẩn các section khác
   document.querySelectorAll('.w3-container').forEach(section => section.classList.add('hidden'));
   adminSection.classList.remove('hidden');
 }
 
-// Thêm biến đếm cho submenu
 let newSubContentCounter = 1;
-
 function editSubContent(parentId, subId) {
-  // Tìm row của submenu
   const row = document.querySelector(`button[onclick="editSubContent('${parentId}', '${subId}')"]`).closest('tr');
   const currentName = row.cells[0].textContent;
-  
-  // Tạo input để edit
   const input = document.createElement('input');
   input.type = 'text';
   input.value = currentName;
   input.style.width = '100%';
   input.style.padding = '5px';
   
-  // Thay thế text bằng input
   row.cells[0].textContent = '';
   row.cells[0].appendChild(input);
   
-  // Focus vào input
   input.focus();
-  
+
   function handleEdit(e) {
     if (e.type === 'keyup' && e.key !== 'Enter') return;
     
     const newName = input.value.trim();
     if (newName) {
-      // Cập nhật tên trong bảng
       row.cells[0].textContent = newName;
-      
-      // Cập nhật sidebar
       const sidebarLink = document.querySelector(`a[href="#${subId}"]`);
       if (sidebarLink) {
         sidebarLink.textContent = newName;
@@ -511,11 +462,9 @@ function editSubContent(parentId, subId) {
 
 function deleteSubContent(parentId, subId) {
   if (confirm('Bạn có chắc chắn muốn xóa mục này?')) {
-    // Xóa row từ bảng
     const row = document.querySelector(`button[onclick="deleteSubContent('${parentId}', '${subId}')"]`).closest('tr');
     row.remove();
     
-    // Xóa link từ sidebar
     const sidebarLink = document.querySelector(`a[href="#${subId}"]`);
     if (sidebarLink) {
       sidebarLink.remove();
@@ -523,13 +472,12 @@ function deleteSubContent(parentId, subId) {
   }
 }
 
+//function to add new sub content
 function addSubContent(parentId, subId) {
-  // Tạo ID mới cho submenu
   const newSubId = `subcontent-${Date.now()}`;
   const newSubName = `Nội dung mới ${newSubContentCounter}`;
   newSubContentCounter++;
   
-  // Thêm row mới vào bảng
   const row = document.querySelector(`button[onclick="addSubContent('${parentId}', '${subId}')"]`).closest('tr');
   const newRow = document.createElement('tr');
   newRow.innerHTML = `
@@ -541,7 +489,6 @@ function addSubContent(parentId, subId) {
   `;
   row.insertAdjacentElement('afterend', newRow);
 
-  // Thêm link mới vào sidebar
   const sidebarLink = document.querySelector(`a[href="#${subId}"]`);
   if (sidebarLink) {
     const newSidebarLink = document.createElement('a');
@@ -552,20 +499,18 @@ function addSubContent(parentId, subId) {
   }
 }
 
+//function to view sub content
 function viewSubContent(parentId, subId) {
-  // Lấy tên của parent section và submenu
   const parentRow = document.querySelector(`button[onclick="viewContent('${parentId}')"]`).closest('tr');
   const parentName = parentRow.cells[0].textContent;
   
   const subRow = document.querySelector(`button[onclick="viewSubContent('${parentId}', '${subId}')"]`).closest('tr');
   const subName = subRow.cells[0].textContent;
 
-  // Tạo ID cho admin content layout view
   const adminLayoutId = `admin-layout-${parentId}-${subId}`;
   let adminLayoutSection = document.getElementById(adminLayoutId);
 
   if (!adminLayoutSection) {
-    // Xác định tên mặc định dựa vào subId
     let defaultItemName;
     if (subId === 'classInfo') {
       defaultItemName = 'Thông tin khai giảng 1';
@@ -652,8 +597,6 @@ function viewSubContent(parentId, subId) {
     `;
     
     document.getElementById('content-container').appendChild(adminLayoutSection);
-
-    // Cập nhật style
     const style = document.createElement('style');
     style.textContent = `
       .seminar-header {
@@ -693,38 +636,24 @@ function viewSubContent(parentId, subId) {
     document.head.appendChild(style);
   }
 
-  // Thêm event listeners cho các link trong sidebar
   const sidebar = document.getElementById('mySidebar');
   if (sidebar) {
     const sidebarLinks = sidebar.querySelectorAll('a');
     sidebarLinks.forEach(link => {
       link.addEventListener('click', (e) => {
-        e.preventDefault();
-        
-        // Remove active class from all links
+        e.preventDefault();       
         sidebarLinks.forEach(l => l.classList.remove('active'));
-        
-        // Add active class to clicked link
         link.classList.add('active');
-        
-        // Get the target section id from href
         const targetId = link.getAttribute('href').substring(1);
-        
-        // Find the corresponding row in admin table
         const targetRow = document.querySelector(`button[onclick="viewSubContent('${parentId}', '${targetId}')"]`)?.closest('tr');
         if (targetRow) {
-          // Get the content name from the row
           const targetName = targetRow.cells[0].textContent;
-          
-          // Create or update the content section
           const targetLayoutId = `admin-layout-${parentId}-${targetId}`;
           let targetSection = document.getElementById(targetLayoutId);
           
           if (!targetSection) {
-            // If section doesn't exist, create it similar to viewSubContent
             viewSubContent(parentId, targetId);
           } else {
-            // If section exists, just show it
             document.querySelectorAll('.w3-container').forEach(section => section.classList.add('hidden'));
             targetSection.classList.remove('hidden');
           }
@@ -733,11 +662,9 @@ function viewSubContent(parentId, subId) {
     });
   }
 
-  // Hiển thị admin layout và ẩn các section khác
   document.querySelectorAll('.w3-container').forEach(section => section.classList.add('hidden'));
   adminLayoutSection.classList.remove('hidden');
 
-  // Highlight item tương ứng trong sidebar
   const sidebarLinks = document.querySelectorAll('.w3-sidebar a');
   sidebarLinks.forEach(link => link.classList.remove('active'));
   
@@ -747,7 +674,7 @@ function viewSubContent(parentId, subId) {
   }
 }
 
-// Thêm CSS cho active state của sidebar links
+// add css for active state of sidebar links
 const sidebarStyle = document.createElement('style');
 sidebarStyle.textContent = `
   .w3-sidebar a.active {
@@ -762,9 +689,8 @@ sidebarStyle.textContent = `
 `;
 document.head.appendChild(sidebarStyle);
 
-// Thêm các hàm xử lý cho bảng quản lý trong layout
+// add handle functions for layout management table
 function viewLayoutContent(parentId, subId, contentId) {
-  // Lấy tên của parent, submenu và content item
   const parentRow = document.querySelector(`button[onclick="viewContent('${parentId}')"]`).closest('tr');
   const parentName = parentRow.cells[0].textContent;
   
@@ -774,7 +700,6 @@ function viewLayoutContent(parentId, subId, contentId) {
   const contentRow = document.querySelector(`button[onclick="viewLayoutContent('${parentId}', '${subId}', '${contentId}')"]`).closest('tr');
   const contentName = contentRow.cells[0].textContent;
 
-  // Tạo ID cho content view
   const contentViewId = `content-view-${parentId}-${subId}-${contentId}`;
   let contentViewSection = document.getElementById(contentViewId);
 
@@ -814,7 +739,6 @@ function viewLayoutContent(parentId, subId, contentId) {
     
     document.getElementById('content-container').appendChild(contentViewSection);
 
-    // Thêm style cho editor và preview
     const style = document.createElement('style');
     style.textContent = `
       .content-editor {
@@ -878,15 +802,12 @@ function viewLayoutContent(parentId, subId, contentId) {
     `;
     document.head.appendChild(style);
 
-    // Load nội dung đã lưu (nếu có)
     loadSavedContent(contentViewId);
   }
 
-  // Hiển thị content view và ẩn các section khác
   document.querySelectorAll('.w3-container').forEach(section => section.classList.add('hidden'));
   contentViewSection.classList.remove('hidden');
 
-  // Cập nhật sidebar để giống với Admin contents layout
   const sidebar = document.getElementById('mySidebar');
   if (sidebar) {
     // Xác định các submenu dựa vào parentId
@@ -933,7 +854,6 @@ function viewLayoutContent(parentId, subId, contentId) {
       ];
     }
 
-    // Tạo sidebar HTML
     sidebar.innerHTML = `
       <h4 class="w3-bar-item"><b>${subName}</b></h4>
       ${subMenus.map(menu => `
@@ -941,14 +861,12 @@ function viewLayoutContent(parentId, subId, contentId) {
       `).join('')}
     `;
 
-    // Highlight item hiện tại
     const currentLink = sidebar.querySelector(`a[href="#${subId}"]`);
     if (currentLink) {
       currentLink.classList.add('active');
     }
   }
 
-  // Sau khi load saved content, đảm bảo nội dung cũng được hiển thị trong menu chính
   const savedContent = localStorage.getItem(`content-${contentViewId}`);
   if (savedContent) {
     updateMainMenuContent(parentId, subId, contentId, savedContent);
@@ -977,7 +895,6 @@ function editLayoutContent(parentId, subId, contentId) {
     if (newName) {
       row.cells[0].textContent = newName;
       
-      // Cập nhật tên trong grid
       const adminLayoutId = `admin-layout-${parentId}-${subId}`;
       const grid = document.getElementById(`seminarGrid-${adminLayoutId}`);
       if (grid) {
@@ -1006,7 +923,6 @@ function deleteLayoutContent(parentId, subId, contentId) {
     const contentName = row.cells[0].textContent;
     row.remove();
 
-    // Xóa khỏi grid
     const adminLayoutId = `admin-layout-${parentId}-${subId}`;
     const grid = document.getElementById(`seminarGrid-${adminLayoutId}`);
     if (grid) {
@@ -1020,12 +936,11 @@ function deleteLayoutContent(parentId, subId, contentId) {
   }
 }
 
+//function to add new layout content
 let layoutContentCounter = 1;
-
 function addLayoutContent(parentId, subId, contentId) {
   const newContentId = `layout-content-${Date.now()}`;
   
-  // Xác định prefix cho tên mới dựa vào subId
   let newContentPrefix;
   if (subId === 'classInfo') {
     newContentPrefix = 'Thông tin khai giảng';
@@ -1082,7 +997,6 @@ function addLayoutContent(parentId, subId, contentId) {
   const newContentName = `${newContentPrefix} ${layoutContentCounter + 1}`;
   layoutContentCounter++;
   
-  // Thêm vào bảng
   const row = document.querySelector(`button[onclick="addLayoutContent('${parentId}', '${subId}', '${contentId}')"]`).closest('tr');
   const newRow = document.createElement('tr');
   newRow.innerHTML = `
@@ -1094,7 +1008,6 @@ function addLayoutContent(parentId, subId, contentId) {
   `;
   row.insertAdjacentElement('afterend', newRow);
 
-  // Thêm vào grid
   const adminLayoutId = `admin-layout-${parentId}-${subId}`;
   const grid = document.getElementById(`seminarGrid-${adminLayoutId}`);
   if (grid) {
@@ -1107,26 +1020,26 @@ function addLayoutContent(parentId, subId, contentId) {
   }
 }
 
-// Thêm hàm hỗ trợ để quay lại view admin
+// function support to return to admin view
 function returnToAdminView(parentId) {
   viewContent(parentId);
 }
 
-// Thêm hàm xử lý lưu thay đổi
+// funtion to save content layout
 function saveContentLayout(parentId, subId) {
   // Xử lý lưu thay đổi ở đây
   alert('Đã lưu thay đổi thành công!');
   returnToAdminView(parentId);
 }
 
-// Thêm hàm xử lý hủy thay đổi
+// function to cancel content layout
 function cancelContentLayout(parentId, subId) {
   if (confirm('Bạn có chắc chắn muốn hủy các thay đổi?')) {
     returnToAdminView(parentId);
   }
 }
 
-// Hàm cập nhật preview khi người dùng nhập nội dung
+// Function to update preview content when user types in editor (textarea)
 function updatePreview(contentViewId) {
   const editor = document.getElementById(`contentEditor-${contentViewId}`);
   const preview = document.getElementById(`contentPreview-${contentViewId}`);
@@ -1134,36 +1047,26 @@ function updatePreview(contentViewId) {
   if (editor && preview) {
     const newContent = editor.value;
     preview.innerHTML = newContent;
-    
-    // Lưu nội dung vào localStorage
+
     localStorage.setItem(`content-${contentViewId}`, newContent);
 
-    // Lấy thông tin về item đang được edit
     const [, parentId, subId, contentId] = contentViewId.split('-');
-    
-    // Cập nhật nội dung trong menu chính
     updateMainMenuContent(parentId, subId, contentId, newContent);
   }
 }
 
-// Thêm biến để lưu trữ nội dung của tất cả các items
+//function to update main menu content
 const contentStorage = {};
-
-// Sửa hàm updateMainMenuContent
 function updateMainMenuContent(parentId, subId, contentId, newContent) {
-  // Lưu nội dung mới vào storage
   const storageKey = `${parentId}-${subId}-${contentId}`;
   contentStorage[storageKey] = newContent;
 
-  // Tìm section chính tương ứng
   const mainSection = document.getElementById(parentId);
   if (!mainSection) return;
 
-  // Tìm subsection tương ứng
   const subSection = mainSection.querySelector(`#${subId}`);
   if (!subSection) return;
 
-  // Lấy grid từ Admin contents layout
   const adminLayoutId = `admin-layout-${parentId}-${subId}`;
   const adminLayoutSection = document.getElementById(adminLayoutId);
   if (!adminLayoutSection) return;
@@ -1172,23 +1075,17 @@ function updateMainMenuContent(parentId, subId, contentId, newContent) {
   const gridContainer = adminLayoutSection.querySelector('.seminar-grid');
   
   if (gridHeader && gridContainer) {
-    // Xóa nội dung cũ của subsection
     subSection.innerHTML = '';
-    
-    // Clone grid header
     const newHeader = document.createElement('div');
     newHeader.className = 'section-header';
     newHeader.textContent = gridHeader.textContent;
     
-    // Tạo grid container mới
     const newGrid = document.createElement('div');
     newGrid.className = 'seminar-grid';
     
-    // Lấy tất cả các items từ bảng admin
     const adminTable = adminLayoutSection.querySelector('.admin-table tbody');
     const rows = adminTable.querySelectorAll('tr');
     
-    // Tạo các grid items cho mỗi row trong bảng admin
     rows.forEach(row => {
       const contentName = row.cells[0].textContent;
       const itemContentId = row.querySelector('button[onclick^="viewLayoutContent"]')
@@ -1200,7 +1097,6 @@ function updateMainMenuContent(parentId, subId, contentId, newContent) {
         const itemStorageKey = `${parentId}-${subId}-${itemContentId}`;
         const itemContent = contentStorage[itemStorageKey];
         
-        // Chỉ tạo item nếu có nội dung
         if (itemContent) {
           const newItem = document.createElement('div');
           newItem.className = 'seminar-item';
@@ -1213,11 +1109,9 @@ function updateMainMenuContent(parentId, subId, contentId, newContent) {
       }
     });
     
-    // Thêm header và grid vào subsection
     subSection.appendChild(newHeader);
     subSection.appendChild(newGrid);
 
-    // Thêm style cho grid layout
     const gridStyles = document.createElement('style');
     gridStyles.textContent = `
       .seminar-grid {
@@ -1249,7 +1143,7 @@ function updateMainMenuContent(parentId, subId, contentId, newContent) {
   }
 }
 
-// Sửa hàm loadSavedContent để cập nhật contentStorage
+// edit loadSavedContent function to update contentStorage
 function loadSavedContent(contentViewId) {
   const editor = document.getElementById(`contentEditor-${contentViewId}`);
   const preview = document.getElementById(`contentPreview-${contentViewId}`);
@@ -1260,7 +1154,6 @@ function loadSavedContent(contentViewId) {
       editor.value = savedContent;
       preview.innerHTML = savedContent;
 
-      // Cập nhật contentStorage và menu chính
       const [, parentId, subId, contentId] = contentViewId.split('-');
       const storageKey = `${parentId}-${subId}-${contentId}`;
       contentStorage[storageKey] = savedContent;
@@ -1269,7 +1162,7 @@ function loadSavedContent(contentViewId) {
   }
 }
 
-// Thêm CSS cho grid layout
+// Add css for grid layout
 const style = document.createElement('style');
 style.textContent = `
   .seminar-grid {
@@ -1298,25 +1191,21 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Thêm hàm mới để xử lý reset menu sinh viên
+// add a new function to reset student menu
 function resetStudentMenu(id) {
   if (confirm('Bạn có chắc chắn muốn reset menu? Tất cả nội dung hiện tại sẽ bị xóa.')) {
-    // Các menu mặc định
     const defaultMenus = [
       { id: 'cv', name: 'CV' },
       { id: 'projects', name: 'Các dự án đã tham gia' },
       { id: 'community', name: 'Sinh hoạt cộng đồng' }
     ];
 
-    // Tìm bảng admin
     const adminViewId = `admin-view-${id}`;
     const adminTable = document.querySelector(`#${adminViewId} .admin-table tbody`);
     if (!adminTable) return;
 
-    // Xóa tất cả các row hiện tại
     adminTable.innerHTML = '';
 
-    // Thêm các menu mặc định
     defaultMenus.forEach(menu => {
       const row = document.createElement('tr');
       row.innerHTML = `
@@ -1329,7 +1218,6 @@ function resetStudentMenu(id) {
       adminTable.appendChild(row);
     });
 
-    // Xóa tất cả nội dung đã lưu
     Object.keys(contentStorage).forEach(key => {
       if (key.startsWith(`${id}-`)) {
         delete contentStorage[key];
@@ -1342,7 +1230,6 @@ function resetStudentMenu(id) {
       }
     });
 
-    // Cập nhật sidebar
     const sidebar = document.getElementById('mySidebar');
     if (sidebar) {
       sidebar.innerHTML = `
@@ -1353,7 +1240,6 @@ function resetStudentMenu(id) {
       `;
     }
 
-    // Hiển thị thông báo thành công
-    alert('Đã reset menu thành công!');
+    alert('Reset completed!');
   }
 }
