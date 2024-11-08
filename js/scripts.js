@@ -362,15 +362,6 @@ function viewContent(id) {
           ` : ''}
         </div>
         <table class="table-info admin-table">
-          <thead>
-            <tr>
-              <th>Tên nội dung</th>
-              <th>View</th>
-              <th>Sửa</th>
-              <th>Xóa</th>
-              <th>Thêm</th>
-            </tr>
-          </thead>
           <tbody>
             ${subMenus.map(menu => `
               <tr>
@@ -638,15 +629,6 @@ function viewSubContent(parentId, subId) {
         
         <!-- Bảng quản lý nội dung -->
         <table class="table-info admin-table">
-          <thead>
-            <tr>
-              <th>Tên nội dung</th>
-              <th>View</th>
-              <th>Sửa</th>
-              <th>Xóa</th>
-              <th>Thêm</th>
-            </tr>
-          </thead>
           <tbody>
             <tr>
               <td>${defaultItemName}</td>
@@ -711,11 +693,51 @@ function viewSubContent(parentId, subId) {
     document.head.appendChild(style);
   }
 
+  // Thêm event listeners cho các link trong sidebar
+  const sidebar = document.getElementById('mySidebar');
+  if (sidebar) {
+    const sidebarLinks = sidebar.querySelectorAll('a');
+    sidebarLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        // Remove active class from all links
+        sidebarLinks.forEach(l => l.classList.remove('active'));
+        
+        // Add active class to clicked link
+        link.classList.add('active');
+        
+        // Get the target section id from href
+        const targetId = link.getAttribute('href').substring(1);
+        
+        // Find the corresponding row in admin table
+        const targetRow = document.querySelector(`button[onclick="viewSubContent('${parentId}', '${targetId}')"]`)?.closest('tr');
+        if (targetRow) {
+          // Get the content name from the row
+          const targetName = targetRow.cells[0].textContent;
+          
+          // Create or update the content section
+          const targetLayoutId = `admin-layout-${parentId}-${targetId}`;
+          let targetSection = document.getElementById(targetLayoutId);
+          
+          if (!targetSection) {
+            // If section doesn't exist, create it similar to viewSubContent
+            viewSubContent(parentId, targetId);
+          } else {
+            // If section exists, just show it
+            document.querySelectorAll('.w3-container').forEach(section => section.classList.add('hidden'));
+            targetSection.classList.remove('hidden');
+          }
+        }
+      });
+    });
+  }
+
   // Hiển thị admin layout và ẩn các section khác
   document.querySelectorAll('.w3-container').forEach(section => section.classList.add('hidden'));
   adminLayoutSection.classList.remove('hidden');
 
-  // Chỉ highlight item tương ứng trong sidebar hiện tại
+  // Highlight item tương ứng trong sidebar
   const sidebarLinks = document.querySelectorAll('.w3-sidebar a');
   sidebarLinks.forEach(link => link.classList.remove('active'));
   
@@ -724,6 +746,21 @@ function viewSubContent(parentId, subId) {
     targetLink.classList.add('active');
   }
 }
+
+// Thêm CSS cho active state của sidebar links
+const sidebarStyle = document.createElement('style');
+sidebarStyle.textContent = `
+  .w3-sidebar a.active {
+    background-color: #ffc107;
+    color: white;
+  }
+
+  .w3-sidebar a:hover {
+    background-color: #ffdb4d;
+    color: black;
+  }
+`;
+document.head.appendChild(sidebarStyle);
 
 // Thêm các hàm xử lý cho bảng quản lý trong layout
 function viewLayoutContent(parentId, subId, contentId) {
@@ -1084,7 +1121,7 @@ function saveContentLayout(parentId, subId) {
 
 // Thêm hàm xử lý hủy thay đổi
 function cancelContentLayout(parentId, subId) {
-  if (confirm('Bạn có ch���c chắn muốn hủy các thay đổi?')) {
+  if (confirm('Bạn có chắc chắn muốn hủy các thay đổi?')) {
     returnToAdminView(parentId);
   }
 }
